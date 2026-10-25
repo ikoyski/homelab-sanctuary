@@ -111,6 +111,18 @@ Weather level is computed from the share of down services: 0 down is level 0 (cl
 - Tailwind comes from `cdn.tailwindcss.com`. For an offline homelab, vendor it or replace it with compiled CSS.
 - No authentication. Do not expose it publicly with an unauthenticated Prometheus behind it.
 
-## License
+## Screenshots
 
-Add your license of choice here (MIT is common).
+<img width="1226" height="1257" alt="image" src="https://github.com/user-attachments/assets/48f44181-5dfb-48f2-8f9a-20f3eb86ec54" />
+<img width="1229" height="1262" alt="image" src="https://github.com/user-attachments/assets/91a9cab7-dca2-42ab-8471-0421122d11ca" />
+<img width="1232" height="1264" alt="image" src="https://github.com/user-attachments/assets/b7ba5f37-34dd-4ce9-9d47-860e31692488" />
+<img width="1232" height="1262" alt="image" src="https://github.com/user-attachments/assets/0101f384-7777-4c98-a99e-520455f0b6bc" />
+<img width="1234" height="1267" alt="image" src="https://github.com/user-attachments/assets/9e83f008-b329-472a-a6e8-e0f5ccabeade" />
+<img width="1230" height="1263" alt="image" src="https://github.com/user-attachments/assets/e9f7e1a5-9a15-4252-9455-196569a8f84b" />
+<img width="1231" height="1264" alt="image" src="https://github.com/user-attachments/assets/7ed29b90-295f-4a1c-a81b-1798cb3d982f" />
+<img width="1235" height="1263" alt="image" src="https://github.com/user-attachments/assets/43acc480-fb2d-4012-a19a-e8ca94bbf380" />
+<img width="1234" height="1262" alt="image" src="https://github.com/user-attachments/assets/fd4bf56b-d5af-4d96-b902-e37945d97ee3" />
+
+
+
+Add your license of choice here (MIT is comm
