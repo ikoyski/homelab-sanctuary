@@ -402,6 +402,20 @@ Character assignment is deterministic, so a service does not randomly change ide
 
 ---
 
+## 🪖 Army Barracks scene
+
+The Army Barracks scene turns each host into a military barracks room with camouflage colors, a unit roster, bunks, and lockers. It uses the same dynamic Prometheus host/app discovery as every other scene.
+
+- Each monitored app becomes a soldier wearing camouflage and a helmet, marching in formation.
+- Soldiers have no office desks or chairs.
+- A drill sergeant stands at the bottom center, facing the formation.
+- When any app in a host is DOWN, the sergeant raises his arms and displays a **SOLDIER DOWN!** warning. When the host is healthy, he urges the formation to keep marching.
+- The room subtitle identifies the department as a platoon barracks.
+
+The scene is a stylized 2D illustration drawn on the existing canvas, not a separate 3D view.
+
+---
+
 ## 🏫 High School scene
 
 The High School scene uses a different metaphor while retaining the same monitoring model.
