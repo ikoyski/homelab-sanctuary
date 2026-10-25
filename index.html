@@ -450,7 +450,28 @@
 
         function drawSoldier(w, up, t, ph) {
             const c=ctx, step=up?Math.sin(t*.16+ph):0, bob=up?Math.abs(Math.sin(t*.16+ph))*2:0, camo=['#35452d','#596747','#283a27','#7b8658','#465438'];
-            c.save(); c.translate(0,bob); c.fillStyle='rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(0,29,17,4,0,0,Math.PI*2); c.fill();
+            c.save();
+            if (!up) {
+                // DOWN services are shown as fallen soldiers, not sleeping/standing sprites.
+                c.translate(0, 18);
+                c.rotate(-Math.PI / 2.35);
+                c.fillStyle='rgba(0,0,0,.32)'; c.beginPath(); c.ellipse(0,27,18,5,0,0,Math.PI*2); c.fill();
+                c.strokeStyle='#252d21'; c.lineWidth=6; c.lineCap='round'; c.beginPath();
+                c.moveTo(-5,15); c.lineTo(-11,25); c.lineTo(-18,26); c.moveTo(5,15); c.lineTo(12,24); c.lineTo(19,25); c.stroke();
+                c.fillStyle='#273022'; c.fillRect(-22,24,8,4); c.fillRect(15,23,8,4);
+                rr(c,-10,-3,20,22,4,'#46563a','#202b1e');
+                for(let i=0;i<8;i++){c.fillStyle=camo[(i+w.hs)%camo.length];c.fillRect(-8+(i%3)*6,0+Math.floor(i/3)*6,4,4);}
+                c.fillStyle='#c7b98a';c.fillRect(-5,4,10,3);
+                c.strokeStyle='#46563a';c.lineWidth=5;c.beginPath();c.moveTo(-8,1);c.lineTo(-17,7);c.moveTo(8,1);c.lineTo(16,8);c.stroke();
+                c.fillStyle=w.skin;c.beginPath();c.arc(-17,7,3,0,Math.PI*2);c.arc(16,8,3,0,Math.PI*2);c.fill();
+                c.fillStyle=w.skin;c.beginPath();c.arc(0,-10,8,0,Math.PI*2);c.fill();
+                c.fillStyle='#293426';c.beginPath();c.ellipse(0,-15,10,6,0,Math.PI,Math.PI*2);c.fill();c.fillRect(-9,-15,18,2);
+                for(let i=0;i<5;i++){c.fillStyle=camo[(i+w.hs)%camo.length];c.fillRect(-7+i*3,-17+(i%2),3,3);}
+                c.fillStyle='#1f261c';c.fillRect(-4,-11,2,2);c.fillRect(3,-11,2,2);
+                c.restore();
+                return;
+            }
+            c.translate(0,bob); c.fillStyle='rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(0,29,17,4,0,0,Math.PI*2); c.fill();
             c.strokeStyle='#252d21'; c.lineWidth=5; c.lineCap='round'; c.beginPath(); c.moveTo(-5,17); c.lineTo(-6+step*7,26); c.lineTo(-10+step*9,27); c.moveTo(5,17); c.lineTo(6-step*7,26); c.lineTo(10-step*9,27); c.stroke();
             c.fillStyle='#273022'; c.fillRect(-13+step*9,25,7,3); c.fillRect(7-step*9,25,7,3); rr(c,-10,-2,20,22,4,'#46563a','#202b1e');
             for(let i=0;i<8;i++){c.fillStyle=camo[(i+w.hs)%camo.length];c.fillRect(-8+(i%3)*6,1+Math.floor(i/3)*6,4,4);}
@@ -458,7 +479,7 @@
             c.fillStyle=w.skin;c.beginPath();c.arc(-13-step*5,11+step*3,3,0,Math.PI*2);c.arc(13+step*5,11-step*3,3,0,Math.PI*2);c.fill();
             c.fillStyle=w.skin;c.beginPath();c.arc(0,-9,8,0,Math.PI*2);c.fill();c.fillStyle='#293426';c.beginPath();c.ellipse(0,-14,10,6,0,Math.PI,Math.PI*2);c.fill();c.fillRect(-9,-14,18,2);
             for(let i=0;i<5;i++){c.fillStyle=camo[(i+w.hs)%camo.length];c.fillRect(-7+i*3,-16+(i%2),3,3);} c.fillStyle='#1f261c';c.fillRect(-4,-10,2,2);c.fillRect(3,-10,2,2);
-            if(!up){c.fillStyle='#fca5a5';c.font='bold 9px system-ui';c.textAlign='center';c.fillText('Zz',14,-19);} c.restore();
+            c.restore();
         }
         function drawSergeant(host,R,x,y,w,h,t){
             const down=hostAppSchema[host].some(app=>!liveServiceState[host+':'+app]),c=ctx;c.save();c.translate(R.x,y+h-40);
