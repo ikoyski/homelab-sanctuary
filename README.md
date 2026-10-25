@@ -44,6 +44,7 @@ The dashboard contains multiple visual worlds that all use the same underlying i
 | 🌱 **Farm** | Departments become plots and services become crops. |
 | 🧙 **Fantasy Guild** | Services become wizards, knights, elves, dwarves, and alchemists. |
 | 🌊 **Underwater Lab** | Services become underwater researchers and creatures. |
+| 🏭 **Automated Factory** | Hosts become production floors with conveyors, machine cells, robot workers, and health-reactive warning lights. |
 | 🏫 **High School** | Services become students while a teacher reacts to the health of the class. |
 
 Scenes are configuration-driven. The monitoring model does not change when the visual theme changes.
@@ -298,6 +299,8 @@ Scenes can rename or reinterpret these states. For example, a space-themed scene
 
 This allows the monitoring signal to influence the environment without changing the underlying monitoring model.
 
+The header also reflects the current aggregate state: **Awaiting Metrics**, **All Systems Operational**, or **Attention Required**. On every successful Prometheus query, known host/app pairs are reset before returned series are applied. If a previously known series disappears from a successful result, it cannot remain falsely green. If the query itself fails, the dashboard keeps the last known state while reporting the next successful poll as the source of truth.
+
 ---
 
 ## 🐄 Barnhouse & 🌱 Farm
@@ -370,6 +373,17 @@ Services can become:
 - Alchemist
 
 A failed service is represented as cursed or asleep and can lose its normal color treatment.
+
+### Automated Factory
+
+The factory scene replaces office furniture with conveyor belts, production cells, and machine status lights.
+
+- Each dynamically discovered host becomes a production floor.
+- Each app becomes a themed robot or factory worker.
+- Healthy rooms show active production lights.
+- If a host has failed services, the belt and machine indicators switch to warning red and the floor displays a line-check or line-stopped message.
+
+The factory scene uses the same Prometheus labels and runtime host/app discovery as every other scene; no per-host configuration is required.
 
 ### Underwater Lab
 
