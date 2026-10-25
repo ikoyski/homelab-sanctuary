@@ -12,11 +12,23 @@
         .ghibli-panel { background: rgba(30, 24, 42, 0.88); backdrop-filter: blur(12px); border: 1px solid rgba(255, 220, 150, 0.2); box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.7); color: #fef3c7; }
         .custom-scroll::-webkit-scrollbar { height: 4px; width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #78350f; border-radius: 4px; }
-        @media (max-width: 520px) {
-            .header-panel { padding: .65rem .75rem !important; gap: .5rem; }
-            .header-brand-copy { display: none !important; }
-            .header-brand-icon { flex: 0 0 2.5rem; }
-            #scene-select { max-width: 42vw; min-width: 0; }
+        @media (max-width: 640px) {
+            .header-panel {
+                padding: .5rem .65rem !important;
+                gap: .5rem;
+                min-height: 3.5rem;
+            }
+            /* Keep the mobile header to one compact row: icon, scene picker, dedication. */
+            .header-panel .header-brand-copy { display: none !important; }
+            .header-panel > .flex:first-child { flex: 0 0 auto; gap: 0 !important; }
+            .header-brand-icon {
+                width: 2.5rem !important;
+                height: 2.5rem !important;
+                flex: 0 0 2.5rem;
+            }
+            .header-panel > .flex:last-child { flex: 1 1 auto; min-width: 0; justify-content: flex-end; }
+            #scene-select { flex: 1 1 auto; width: 1%; max-width: none; min-width: 0; }
+            #ded-btn { flex: 0 0 2.5rem; width: 2.5rem; height: 2.5rem; }
         }
     </style>
 </head>
