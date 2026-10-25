@@ -128,7 +128,7 @@ Common scene configuration fields include:
 | `dec(ctx, x, y, t, i)` | Optional wall decoration |
 | `rain` | Color used for rain or meteor streaks |
 | `wn`, `wi` | Four weather names and optional four header icons |
-| `kind`, `map`, `list` | Select animal/crop-style workers and map hosts to species; fallback list selection is hash-based |
+| `kind`, `map`, `list` | Select animal/crop-style workers and map hosts to species; absent explicit mappings, distribute sorted hosts across the type list so departments vary consistently |
 | `kind: 'cast'`, `chars`, `dn`, `stn` | Themed character registry keys, down-state effect, and desk props |
 | `nw` | Set to `1` to use an open sky band across the wall |
 | `fn`, `ln` | Optional first/last-name lists for hover cards |
@@ -149,8 +149,9 @@ The `hostAppSchema` registry is populated at runtime from Prometheus; this table
 
 ### Scene-specific systems
 
-- **Animal/crop scenes:** follow the existing `kind`, `map`, `list`, and `kindSprite` conventions. Keep species/plant selection stable for each host/app.
+- **Animal/crop scenes:** follow the existing `kind`, `map`, `list`, and `kindSprite` conventions. Select species/crops per host so every app in a department shares that department's type, and distribute different hosts across the list before repeating. Ensure `kindSprite` calls `spOf(w)` for both `animal` and `crop` kinds.
 - **Themed character scenes:** use the existing `CH` registry. Character draw functions receive `P = {up, blink, t, ph}`; preserve the meanings of those fields. Keep down-state effects and desk props compatible with the current scene config.
+- **Automated Factory:** do not set `kind: 'cast'` unless intentionally replacing standard desks/workers. The factory room decoration is layered with the normal per-app worker/desk renderer, so every discovered app remains visible.
 - **High School:** preserve the book-based desk treatment, centered room grid, extra bottom space, teacher drawn from behind facing the class, and teacher mood driven by `roomLvl(host)`. Use `jp` only according to the current nameplate implementation.
 - **Pixel-art scene:** preserve the existing half-resolution rendering path; do not approximate it by applying a CSS filter to every scene.
 - **Health/weather:** preserve the current mapping from room health to weather level and its scene-specific labels/icons. If changing thresholds or aggregation, inspect the current implementation and document the behavior.
