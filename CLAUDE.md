@@ -133,6 +133,7 @@ Common scene configuration fields include:
 | `nw` | Set to `1` to use an open sky band across the wall |
 | `fn`, `ln` | Optional first/last-name lists for hover cards |
 | `school` | Enables the school layout with books, centered grid, extra bottom space, and teacher |
+| `barracks` | Enables the Army Barracks room styling, camouflage soldiers without desks, additional lower space, and a drill sergeant reacting to host health |
 | `jp` | Optional per-host nameplate subtitle overrides, used for class names in the High School scene |
 | `px` | Set to `1` for half-resolution pixel-art rendering |
 
@@ -144,7 +145,7 @@ The `hostAppSchema` registry is populated at runtime from Prometheus; this table
 2. Add a uniquely named configuration to `SC`, including the required palette fields.
 3. Add a `TX` floor texture only if the scene needs one. Texture entries follow the existing `[width, height, (ctx, rng) => {...}]` convention.
 4. Reuse existing weather, window, character, and layout helpers where possible.
-5. Confirm scene selection, animation, hover details, responsive fitting, and health effects still work. For the factory scene, verify conveyor and machine warnings follow `roomLvl(host)`.
+5. Confirm scene selection, animation, hover details, responsive fitting, and health effects still work. For the factory scene, verify conveyor and machine warnings follow `roomLvl(host)`; for Army Barracks, verify soldiers render without desks and the sergeant reacts to a DOWN app.
 6. Run the smoke test and visually inspect the new scene in a browser.
 
 ### Scene-specific systems
@@ -153,6 +154,7 @@ The `hostAppSchema` registry is populated at runtime from Prometheus; this table
 - **Themed character scenes:** use the existing `CH` registry. Character draw functions receive `P = {up, blink, t, ph}`; preserve the meanings of those fields. Keep down-state effects and desk props compatible with the current scene config.
 - **Automated Factory:** do not set `kind: 'cast'` unless intentionally replacing standard desks/workers. The factory room decoration is layered with the normal per-app worker/desk renderer, so every discovered app remains visible.
 - **High School:** preserve the book-based desk treatment, centered room grid, extra bottom space, teacher drawn from behind facing the class, and teacher mood driven by `roomLvl(host)`. Use `jp` only according to the current nameplate implementation.
+- **Army Barracks:** use the `barracks` scene flag for the military room styling and suppress office furniture. Each dynamically discovered app must render as a camouflage soldier in formation with a marching animation; do not draw a desk for soldiers. Keep the drill sergeant at the bottom center facing the formation. The sergeant's warning/reaction must derive from the live health state of apps in that host, not hard-coded service names. Preserve dynamic host/app discovery and verify both healthy and failed states.
 - **Pixel-art scene:** preserve the existing half-resolution rendering path; do not approximate it by applying a CSS filter to every scene.
 - **Health/weather:** preserve the current mapping from room health to weather level and its scene-specific labels/icons. If changing thresholds or aggregation, inspect the current implementation and document the behavior.
 
