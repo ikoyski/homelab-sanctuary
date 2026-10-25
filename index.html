@@ -84,21 +84,10 @@
     </div>
 
     <script>
-        const staticHostSchema = {
-            "media": ["qbittorrent", "prowlarr", "sonarr", "radarr", "lidarr", "bazarr", "jellyfin"],
-            "development": ["openvscode-server", "jenkins", "redis", "postgres"],
-            "utilities": ["pi-hole", "n8n", "open-webui", "ollama", "homeassistant", "grafana", "zipkin", "pi-hole-dns"],
-            "ncloud": ["nextcloud"],
-            "shared": ["webmin", "samba"],
-            "others": ["nvr", "printer"]
-        };
-
+        // Host and app names are discovered from Prometheus labels at runtime.
+        // Keep the frontend independent of any particular homelab inventory.
+        const hostAppSchema = {};
         let liveServiceState = {};
-        Object.keys(staticHostSchema).forEach(host => {
-            staticHostSchema[host].forEach(app => {
-                liveServiceState[`${host}:${app}`] = true;
-            });
-        });
 
         const canvas = document.createElement('canvas');
         document.getElementById('canvas-container').appendChild(canvas);
@@ -117,8 +106,8 @@
             wall: mk(64, 64, (x, r) => { x.fillStyle = '#6a5668'; x.fillRect(0, 0, 64, 64); dots(x, r, 40, 64, 64, ['rgba(255,235,210,.05)', 'rgba(20,0,30,.06)'], 7); x.fillStyle = 'rgba(255,255,255,.03)'; for (let i = 0; i < 8; i++) x.fillRect(r() * 64, 0, 1, 64); }),
             wain: mk(16, 18, x => { x.fillStyle = '#47301f'; x.fillRect(0, 0, 16, 18); x.fillStyle = '#2d1c12'; x.fillRect(0, 0, 1, 18); x.fillStyle = 'rgba(255,200,140,.1)'; x.fillRect(1, 0, 1, 18); x.fillStyle = 'rgba(0,0,0,.25)'; x.fillRect(0, 0, 16, 1); })
         };
-        const THEME = { 'frontend-spa': 'wood', 'backend-services': 'carpet', 'media-pve': 'tatami', 'dev-pve': 'carpet', 'util-pve': 'wood', 'ncloud-pve': 'carpet', 'shared-pve': 'tatami', 'others': 'wood' };
-        const JP = { 'frontend-spa': 'フロント課', 'backend-services': '基幹システム部', 'media-pve': 'メディア室', 'dev-pve': '開発部', 'util-pve': '総務部', 'ncloud-pve': 'クラウド課', 'shared-pve': '共用スペース', 'others': 'その他' };
+        const HOST_FLOORS = ['wood', 'carpet', 'tatami'];
+        const hostFloor = host => HOST_FLOORS[hash(host) % HOST_FLOORS.length];
         const SKIN = ['#fbd5b0', '#f6c39a', '#efb98d', '#fad9bd'], HAIR = ['#2b1d1a', '#4a2e22', '#1f2937', '#6b3a22', '#8a4b2a'], SUIT = ['#3b4a6b', '#2f5d50', '#7a4a2f', '#5b3f78', '#46505e'];
 
         // ===== Scenes: each one is a small config (see CLAUDE.md "Adding a scene") =====
@@ -135,11 +124,10 @@
         };
         const txc = {}, tex = k => txc[k] || (txc[k] = mk(...TX[k]));
         // ===== Barnhouse / Farm: creatures and crops instead of office workers =====
-        const SP = { 'frontend-spa': 'horse', 'backend-services': 'cow', 'media-pve': 'sheep', 'dev-pve': 'pig', 'util-pve': 'duck', 'ncloud-pve': 'chicken', 'shared-pve': 'goat', 'others': 'rabbit' };
-        const CR = { 'frontend-spa': 'tomato', 'backend-services': 'watermelon', 'media-pve': 'pumpkin', 'dev-pve': 'corn', 'util-pve': 'rice', 'ncloud-pve': 'wheat', 'shared-pve': 'carrot', 'others': 'sunflower' };
-        const lab = (m, suf) => Object.fromEntries(Object.entries(m).map(([h, s]) => [h, s[0].toUpperCase() + s.slice(1) + suf]));
+        const SP = ['horse', 'cow', 'sheep', 'pig', 'duck', 'chicken', 'goat', 'rabbit'];
+        const CR = ['tomato', 'watermelon', 'pumpkin', 'corn', 'rice', 'wheat', 'carrot', 'sunflower'];
         const CC = { tomato: '#e11d48', watermelon: '#2f8f4e', pumpkin: '#f97316', corn: '#fde047', rice: '#e6c35a', wheat: '#d9b04a', carrot: '#fb923c', sunflower: '#fbbf24' };
-        const spOf = w => S.map[w.host] || S.list[w.hs % S.list.length];
+        const spOf = w => (S.map && S.map[w.host]) || S.list[w.hs % S.list.length];
         function animal(c, sp, up, t, ph, blink) {
             const el = (x, y, rx, ry, f, r) => { c.fillStyle = f; c.beginPath(); c.ellipse(x, y, rx, ry, r || 0, 0, 7); c.fill(); };
             const body = { horse: '#8b5a2b', cow: '#f8fafc', sheep: '#f5f5f4', pig: '#f4a6b0', duck: '#fff0a8', chicken: '#f8fafc', goat: '#e5e7eb', rabbit: '#f1f5f9' }[sp] || '#ccc', ec = sp == 'sheep' ? '#f8fafc' : '#1f1a17';
@@ -261,17 +249,17 @@
             neon: { n: 'Neon Tokyo', kind: 'cast', chars: ['hacker', 'android', 'netrunner', 'drone'], dn: 'glitch', fn: ['Kuro', 'Neon', 'Ryo', 'Mika', 'Zero', 'Hana', 'Rin', 'Jax'], ln: ['Byte', 'Glitch', 'Pixel', 'Volt'], stn: (c, up, t) => { [-1, 1].forEach(s => { c.save(); c.scale(s, 1); rr(c, 16, -10, 22, 18, 2, up ? 'rgba(34,211,238,.16)' : 'rgba(239,68,68,.25)', up ? '#22d3ee' : '#ef4444'); c.fillStyle = up ? '#67e8f9' : '#fca5a5'; for (let k = 0; k < 4; k++) c.fillRect(19, -7 + k * 4, 6 + ((t >> 3) + k * 5) % 11, 1.6); c.restore(); }) }, tex: 'neon', wall: '#1b1030', wain: '#0f0a22', amb: 'rgba(255,60,200,.16)', sky: ['#120a3a', '#3a1062', '#ff3ea5'], city: 1, nc: 1, nf: 0, fx: 'rain', plq: ['#150a2a', '#22d3ee', '#67e8f9', '#f0abfc'], desk: ['#2b2f45', '#1f2236', '#14162a', '#22d3ee'], chair: '#241a3d', mon: '#2a2540', suit: ['#7c3aed', '#0891b2', '#db2777', '#1d4ed8', '#0f766e'], rain: 'rgba(255,60,200,.8)', wn: ['Clear night', 'Smog', 'Acid rain', 'Power surge'], dec: (c, dx, y, t) => { rr(c, dx, y + 8, 56, 36, 3, '#150a2a'); c.lineWidth = 1.5; c.strokeStyle = '#ff3ec8'; c.stroke(); c.fillStyle = (t >> 5) % 9 ? '#67e8f9' : '#164e63'; c.font = 'bold 15px "Yu Gothic",sans-serif'; c.textAlign = 'center'; c.fillText('サーバ', dx + 28, y + 31); } },
             space: { n: 'Space Station', kind: 'cast', chars: ['astronaut', 'alien', 'robot', 'spacedog'], dn: 'float', fn: ['Nova', 'Orion', 'Lyra', 'Comet', 'Vega', 'Atlas', 'Juno'], ln: ['Parsec', 'Quasar', 'Orbit'], stn: (c, up, t) => { [-1, 1].forEach(s => { c.save(); c.scale(s, 1); rr(c, 15, -8, 22, 16, 2, up ? '#0b1a2e' : '#3b0d0d', '#64748b'); c.fillStyle = up ? '#38bdf8' : '#ef4444'; for (let k = 0; k < 3; k++) c.fillRect(18, -5 + k * 4.5, 5 + ((t >> 4) + k * 3) % 12, 1.6); c.restore(); }); for (let k = 0; k < 5; k++) { c.fillStyle = ['#22c55e', '#f59e0b', '#38bdf8'][k % 3]; c.globalAlpha = (t >> (3 + k % 3)) & 1 ? 1 : .4; c.fillRect(-12 + k * 6, 15, 3, 3); } c.globalAlpha = 1 }, tex: 'hull', wall: '#3a4458', wain: '#2a3140', amb: 'rgba(120,180,255,.14)', sky: ['#05060f', '#0b1030', '#1b2250'], planet: 1, nc: 1, fx: 'stars', plq: ['#1f2a3d', '#38bdf8', '#e0f2fe', '#7dd3fc'], desk: ['#cfd6e0', '#aab4c3', '#6b7587', '#38bdf8'], chair: '#445066', mon: '#8a94a6', suit: ['#f97316', '#e5e7eb', '#38bdf8', '#fbbf24', '#a3e635'], rain: 'rgba(255,230,160,.9)', wn: ['Calm orbit', 'Solar wind', 'Meteor shower', 'Solar flare'], wi: ['🛰️', '☀️', '☄️', '🔥'], dec: (c, dx, y, t) => { rr(c, dx, y + 8, 56, 36, 3, '#1f2937', '#64748b'); for (let k = 0; k < 8; k++) { c.fillStyle = ['#22c55e', '#f59e0b', '#38bdf8', '#ef4444'][k % 4]; c.globalAlpha = (t >> (3 + k % 3)) & 1 ? 1 : .35; c.fillRect(dx + 6 + (k % 4) * 12, y + 14 + (k >> 2) * 10, 6, 6); } c.globalAlpha = 1; c.fillStyle = '#38bdf8'; c.fillRect(dx + 6, y + 36, 44, 3); } },
             pixel: { n: 'Retro 16-bit', px: 1, tex: 'check', wall: '#8a6f4d', wain: '#5a4630', amb: 'rgba(255,220,140,.15)', sky: ['#4a6fe3', '#f4a259', '#f7d794'], plq: ['#b45309', '#451a03', '#fffbeb', '#fde68a'], desk: ['#c08457', '#a0693f', '#704214', '#f0c27b'], chair: '#3b5bdb', mon: '#5c5470', rain: 'rgba(220,235,255,.8)', wn: WN },
-            barn: { n: 'Barnhouse', kind: 'animal', map: SP, list: Object.values(SP), jp: lab(SP, ' stable'), tex: 'straw', wall: '#8f3b2e', wain: '#5b2a1f', amb: 'rgba(255,200,110,.22)', sky: ['#7cc0ee', '#bfe3f5', '#f3f0c0'], nf: 1, fx: 'fly', plq: ['#6b4423', '#2a170b', '#fef3c7', '#fde68a'], desk: ['#a8744a', '#8a5a36', '#5e3b22', '#d3a06c'], chair: '#8a5a32', mon: '#6b4423', rain: 'rgba(200,225,255,.8)', wn: ['Sunny', 'Cloudy', 'Rain', 'Storm'], fn: ['Clover', 'Biscuit', 'Maple', 'Pepper', 'Daisy', 'Ginger', 'Honey', 'Mochi', 'Nugget', 'Bramble', 'Buttercup'], ln: [''], dec: (c, dx, y, t) => { c.strokeStyle = '#8a6a3a'; c.lineWidth = 2; c.beginPath(); c.moveTo(dx + 14, y + 10); c.lineTo(dx + 14, y + 44); c.moveTo(dx + 8, y + 16); c.lineTo(dx + 20, y + 16); c.moveTo(dx + 8, y + 10); c.lineTo(dx + 8, y + 16); c.moveTo(dx + 20, y + 10); c.lineTo(dx + 20, y + 16); c.stroke(); rr(c, dx + 34, y + 16, 14, 20, 3, '#3b2a1a'); c.fillStyle = `rgba(255,190,80,${.7 + Math.sin(t * .15) * .15})`; c.fillRect(dx + 37, y + 20, 8, 12); c.strokeStyle = '#3b2a1a'; c.beginPath(); c.moveTo(dx + 36, y + 16); c.lineTo(dx + 41, y + 10); c.lineTo(dx + 46, y + 16); c.stroke(); } },
-            farm: { n: 'Farm', kind: 'crop', nw: 1, map: CR, list: Object.values(CR), jp: lab(CR, ' plot'), tex: 'field', wall: '#9fd0ee', wain: '#3d7230', amb: 'rgba(255,240,150,.18)', sky: ['#7cc0ee', '#bfe3f5', '#f3f0c0'], nf: 1, fx: 'fly', plq: ['#a16207', '#422006', '#fef9c3', '#fde68a'], desk: ['#b9854c', '#9a6a36', '#6b4423', '#e0b87a'], chair: '#d9b04a', mon: '#6b4423', rain: 'rgba(200,225,255,.8)', wn: ['Sunny', 'Cloudy', 'Rain', 'Storm'], fn: ['Sprout', 'Tilly', 'Bean', 'Poppy', 'Basil', 'Clementine', 'Rowan', 'Olive', 'Willow', 'Juniper', 'Moss'], ln: ['Patch', 'Row', 'Furrow', 'Bloom'], dec: (c, dx, y) => { c.strokeStyle = '#8a5a32'; c.lineWidth = 3; c.beginPath(); c.moveTo(dx + 28, y + 14); c.lineTo(dx + 28, y + 46); c.moveTo(dx + 14, y + 26); c.lineTo(dx + 42, y + 26); c.stroke(); c.fillStyle = '#d9b04a'; c.beginPath(); c.arc(dx + 28, y + 19, 6, 0, 7); c.fill(); c.fillStyle = '#a16207'; c.fillRect(dx + 20, y + 12, 16, 3); c.fillRect(dx + 24, y + 8, 8, 5); c.fillStyle = '#b91c1c'; c.fillRect(dx + 20, y + 28, 16, 10); c.fillStyle = '#222'; c.fillRect(dx + 26, y + 18, 1.5, 1.5); c.fillRect(dx + 30, y + 18, 1.5, 1.5); } },
+            barn: { n: 'Barnhouse', kind: 'animal', list: SP, tex: 'straw', wall: '#8f3b2e', wain: '#5b2a1f', amb: 'rgba(255,200,110,.22)', sky: ['#7cc0ee', '#bfe3f5', '#f3f0c0'], nf: 1, fx: 'fly', plq: ['#6b4423', '#2a170b', '#fef3c7', '#fde68a'], desk: ['#a8744a', '#8a5a36', '#5e3b22', '#d3a06c'], chair: '#8a5a32', mon: '#6b4423', rain: 'rgba(200,225,255,.8)', wn: ['Sunny', 'Cloudy', 'Rain', 'Storm'], fn: ['Clover', 'Biscuit', 'Maple', 'Pepper', 'Daisy', 'Ginger', 'Honey', 'Mochi', 'Nugget', 'Bramble', 'Buttercup'], ln: [''], dec: (c, dx, y, t) => { c.strokeStyle = '#8a6a3a'; c.lineWidth = 2; c.beginPath(); c.moveTo(dx + 14, y + 10); c.lineTo(dx + 14, y + 44); c.moveTo(dx + 8, y + 16); c.lineTo(dx + 20, y + 16); c.moveTo(dx + 8, y + 10); c.lineTo(dx + 8, y + 16); c.moveTo(dx + 20, y + 10); c.lineTo(dx + 20, y + 16); c.stroke(); rr(c, dx + 34, y + 16, 14, 20, 3, '#3b2a1a'); c.fillStyle = `rgba(255,190,80,${.7 + Math.sin(t * .15) * .15})`; c.fillRect(dx + 37, y + 20, 8, 12); c.strokeStyle = '#3b2a1a'; c.beginPath(); c.moveTo(dx + 36, y + 16); c.lineTo(dx + 41, y + 10); c.lineTo(dx + 46, y + 16); c.stroke(); } },
+            farm: { n: 'Farm', kind: 'crop', nw: 1, list: CR, tex: 'field', wall: '#9fd0ee', wain: '#3d7230', amb: 'rgba(255,240,150,.18)', sky: ['#7cc0ee', '#bfe3f5', '#f3f0c0'], nf: 1, fx: 'fly', plq: ['#a16207', '#422006', '#fef9c3', '#fde68a'], desk: ['#b9854c', '#9a6a36', '#6b4423', '#e0b87a'], chair: '#d9b04a', mon: '#6b4423', rain: 'rgba(200,225,255,.8)', wn: ['Sunny', 'Cloudy', 'Rain', 'Storm'], fn: ['Sprout', 'Tilly', 'Bean', 'Poppy', 'Basil', 'Clementine', 'Rowan', 'Olive', 'Willow', 'Juniper', 'Moss'], ln: ['Patch', 'Row', 'Furrow', 'Bloom'], dec: (c, dx, y) => { c.strokeStyle = '#8a5a32'; c.lineWidth = 3; c.beginPath(); c.moveTo(dx + 28, y + 14); c.lineTo(dx + 28, y + 46); c.moveTo(dx + 14, y + 26); c.lineTo(dx + 42, y + 26); c.stroke(); c.fillStyle = '#d9b04a'; c.beginPath(); c.arc(dx + 28, y + 19, 6, 0, 7); c.fill(); c.fillStyle = '#a16207'; c.fillRect(dx + 20, y + 12, 16, 3); c.fillRect(dx + 24, y + 8, 8, 5); c.fillStyle = '#b91c1c'; c.fillRect(dx + 20, y + 28, 16, 10); c.fillStyle = '#222'; c.fillRect(dx + 26, y + 18, 1.5, 1.5); c.fillRect(dx + 30, y + 18, 1.5, 1.5); } },
             guild: { n: 'Fantasy Guild', kind: 'cast', chars: ['wizard', 'knight', 'elf', 'dwarf', 'alchemist'], dn: 'curse', fn: ['Alder', 'Brynn', 'Cael', 'Dara', 'Eldrin', 'Fenwick', 'Gwen', 'Hobb'], ln: ['the Bold', 'the Wise', 'Ironhand', 'Oakheart'], stn: (c, up, t) => { rr(c, -14, 10, 28, 10, 2, '#f5e6c8', '#8a6a3a'); c.fillStyle = up ? 'rgba(167,139,250,.9)' : '#6b7280'; c.fillRect(-12, 12, 10, 1.5); c.fillRect(2, 12, 10, 1.5); c.fillRect(-12, 15, 8, 1.5); rr(c, 30, 8, 5, 12, 1, '#f8fafc', '#9ca3af'); c.fillStyle = up ? '#f97316' : '#6b7280'; c.beginPath(); c.ellipse(32.5, 6, 2, 4 + (up ? Math.sin(t * .2) * 1.5 : 0), 0, 0, 7); c.fill(); rr(c, -36, 10, 7, 10, 2, up ? '#a78bfa' : '#6b7280', '#4c1d95') }, tex: 'flag', wall: '#3a3345', wain: '#2a2433', amb: 'rgba(255,150,60,.2)', sky: ['#1e1b4b', '#4c1d95', '#7c3aed'], fx: 'fire', nf: 1, plq: ['#d8c49a', '#5a3a22', '#3b2412', '#6b4a2a'], desk: ['#4a3426', '#3a281c', '#24170f', '#a78bfa'], chair: '#4c1d95', mon: '#5b3f78', suit: ['#6d28d9', '#1e3a8a', '#047857', '#7f1d1d', '#a16207'], rain: 'rgba(190,170,255,.8)', wn: ['Calm', 'Fog', 'Mist storm', 'Arcane storm'], dec: (c, dx, y, t) => { [dx + 10, dx + 46].forEach((x, k) => { c.fillStyle = '#4b3621'; c.fillRect(x - 2, y + 22, 4, 18); const f = Math.sin(t * .2 + k * 2) * 2; c.fillStyle = '#f97316'; c.beginPath(); c.ellipse(x, y + 18, 4, 7 + f, 0, 0, 7); c.fill(); c.fillStyle = '#fde047'; c.beginPath(); c.ellipse(x, y + 20, 2, 4, 0, 0, 7); c.fill(); }); } },
             ocean: { n: 'Underwater Lab', kind: 'cast', chars: ['diver', 'octopus', 'crab', 'jelly', 'seahorse'], dn: 'net', fn: ['Coral', 'Pearl', 'Finn', 'Marina', 'Kelp', 'Brine', 'Tide', 'Urchin'], ln: ['of the Deep', 'Reef', 'Wave', 'Shell'], stn: (c, up, t) => { [-1, 1].forEach(s => { c.save(); c.scale(s, 1); rr(c, 15, -8, 22, 16, 8, up ? 'rgba(94,234,212,.25)' : 'rgba(239,68,68,.28)', '#5eead4'); for (let k = 0; k < 3; k++) E(c, 24 + k * 4, 6 - ((t * .4 + k * 7) % 14), 1.4, 1.4, 'rgba(220,255,255,.7)'); c.restore(); }); E(c, 0, 16, 5, 3, '#fda4af') }, tex: 'sea', wall: '#1d5f73', wain: '#134556', amb: 'rgba(60,200,220,.22)', sky: ['#0e7490', '#155e75', '#164e63'], fish: 1, nc: 1, nf: 1, fx: 'bub', plq: ['#0f4c5c', '#5eead4', '#ccfbf1', '#99f6e4'], desk: ['#e8d5b5', '#cdb68f', '#8a7653', '#5eead4'], chair: '#e07a8a', mon: '#2f6f7e', suit: ['#0ea5e9', '#f472b6', '#34d399', '#fbbf24', '#a78bfa'], rain: 'rgba(200,255,255,.7)', wn: ['Calm tide', 'Murky water', 'Strong current', 'Whirlpool'], wi: ['🌊', '🫧', '🌀', '🌪️'], dec: (c, dx, y, t) => { c.strokeStyle = '#fb7185'; c.lineWidth = 3; [[dx + 12, 0], [dx + 28, 1], [dx + 44, 2]].forEach(a => { c.beginPath(); c.moveTo(a[0], y + 44); c.lineTo(a[0] + Math.sin(t * .03 + a[1]) * 3, y + 26); c.moveTo(a[0], y + 36); c.lineTo(a[0] + 7, y + 28); c.stroke(); }); c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(dx + 28, y + 42, 4, 0, 7); c.fill(); } }
         ,
-            school: { n: 'High School', school: 1, tex: 'lino', wall: '#c9c2a4', wain: '#3f6b5a', amb: 'rgba(255,255,230,.2)', sky: ['#7cc0ee', '#bfe3f5', '#f3f0c0'], nf: 1, plq: ['#2f5d50', '#14312a', '#f0fdf4', '#bbf7d0'], desk: ['#d9bf8f', '#c2a572', '#7b8794', '#f1dfb8'], chair: '#3b5bdb', mon: '#4a4558', suit: ['#1f2a44', '#27324f', '#2b2b3a', '#3b2a5a', '#1e3a5f'], rain: 'rgba(200,220,255,.7)', wn: ['Sunny', 'Cloudy', 'Rain', 'Thunderstorm'], jp: { 'frontend-spa': '1年A組', 'backend-services': '1年B組', 'media-pve': '2年A組', 'dev-pve': '2年B組', 'util-pve': '3年A組', 'ncloud-pve': '3年B組', 'shared-pve': '図書室', 'others': '購買部' }, dec: (c, dx, y) => { rr(c, dx, y + 8, 56, 36, 2, '#b9824a', '#6b4423'); ['#fef3c7', '#bfdbfe', '#fecaca', '#d9f99d'].forEach((p, k) => { c.fillStyle = p; c.fillRect(dx + 5 + (k % 2) * 26, y + 13 + (k >> 1) * 15, 20, 12); c.fillStyle = '#ef4444'; c.fillRect(dx + 14 + (k % 2) * 26, y + 13 + (k >> 1) * 15, 2, 2); }); } }
+            school: { n: 'High School', school: 1, tex: 'lino', wall: '#c9c2a4', wain: '#3f6b5a', amb: 'rgba(255,255,230,.2)', sky: ['#7cc0ee', '#bfe3f5', '#f3f0c0'], nf: 1, plq: ['#2f5d50', '#14312a', '#f0fdf4', '#bbf7d0'], desk: ['#d9bf8f', '#c2a572', '#7b8794', '#f1dfb8'], chair: '#3b5bdb', mon: '#4a4558', suit: ['#1f2a44', '#27324f', '#2b2b3a', '#3b2a5a', '#1e3a5f'], rain: 'rgba(200,220,255,.7)', wn: ['Sunny', 'Cloudy', 'Rain', 'Thunderstorm'], dec: (c, dx, y) => { rr(c, dx, y + 8, 56, 36, 2, '#b9824a', '#6b4423'); ['#fef3c7', '#bfdbfe', '#fecaca', '#d9f99d'].forEach((p, k) => { c.fillStyle = p; c.fillRect(dx + 5 + (k % 2) * 26, y + 13 + (k >> 1) * 15, 20, 12); c.fillStyle = '#ef4444'; c.fillRect(dx + 14 + (k % 2) * 26, y + 13 + (k >> 1) * 15, 2, 2); }); } }
         };
         let S = SC.ghibli;
         // health -> weather level 0..3 (per room, drawn in its window; whole-site level shown in the header)
         const wl = (d, n) => d == 0 ? 0 : d / n < .25 ? 1 : d / n < .5 ? 2 : 3;
-        const roomLvl = host => { const a = staticHostSchema[host]; return wl(a.filter(p => !liveServiceState[`${host}:${p}`]).length, a.length); };
+        const roomLvl = host => { const a = hostAppSchema[host] || []; return wl(a.filter(p => !liveServiceState[`${host}:${p}`]).length, a.length); };
         function skyFx(host, wx, wy, t, i) {
             const L = roomLvl(host), c = ctx;
             if (S.city) { for (let k = 0; k < 8; k++) { const h = 10 + (k * 7 + i * 3) % 16; c.fillStyle = '#0b0820'; c.fillRect(wx + k * 8, wy + 36 - h, 7, h); c.fillStyle = 'rgba(255,220,120,.8)'; c.fillRect(wx + k * 8 + 2, wy + 36 - h + 3, 2, 2); } }
@@ -300,7 +288,7 @@
         function drawRoom(host, i, alert) {
             const R = rooms[host], w = R.width, h = R.height, x = R.x - w / 2, y = R.z - h / 2, WH = 62, cx = R.x, t = frame;
             ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, w, h, 16); ctx.clip();
-            ctx.fillStyle = S.tex ? tex(S.tex) : T[THEME[host]]; ctx.fillRect(x, y, w, h);
+            ctx.fillStyle = S.tex ? tex(S.tex) : T[hostFloor(host)]; ctx.fillRect(x, y, w, h);
             let g = ctx.createRadialGradient(cx, y + h * .6, 10, cx, y + h * .6, w * .75); g.addColorStop(0, S.amb); g.addColorStop(1, 'rgba(15,8,30,.45)'); ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
             ctx.fillStyle = S.wall || T.wall; ctx.fillRect(x, y, w, WH); ctx.fillStyle = S.wain || T.wain; ctx.fillRect(x, y + WH - 18, w, 18);
             if (S.nw) skyBand(host, x, y, w, t, i);
@@ -320,7 +308,7 @@
             ctx.lineWidth = 1; ctx.strokeStyle = '#c9a46e'; ctx.beginPath(); ctx.moveTo(cx - 40, y); ctx.lineTo(cx - 40, y + 8); ctx.moveTo(cx + 40, y); ctx.lineTo(cx + 40, y + 8); ctx.stroke();
             rr(ctx, cx - 62, y + 8, 124, 36, 4, S.plq[0], S.plq[1]); ctx.fillStyle = 'rgba(255,220,170,.12)'; ctx.fillRect(cx - 60, y + 10, 120, 2);
             ctx.textAlign = 'center'; ctx.fillStyle = alert ? '#fca5a5' : S.plq[2]; ctx.font = 'bold 12px "Yu Mincho","Noto Serif JP",Georgia,serif'; ctx.fillText(host, cx, y + 25);
-            ctx.fillStyle = S.plq[3]; ctx.font = '9px "Yu Gothic",Meiryo,sans-serif'; ctx.fillText((S.jp || JP)[host], cx, y + 38);
+            ctx.fillStyle = S.plq[3]; ctx.font = '9px "Yu Gothic",Meiryo,sans-serif'; ctx.fillText((S.jp && S.jp[host]) || (S.kind === 'animal' ? 'ANIMAL STABLE' : S.kind === 'crop' ? 'GROWING PLOT' : S.school ? 'CLASSROOM' : 'SERVICE DEPARTMENT'), cx, y + 38);
             // wall decor (rotates per room)
             const dx = x + 244, k = i % 3;
             if (S.dec) S.dec(ctx, dx, y, t, i); else if (k == 0) { rr(ctx, dx, y + 8, 56, 36, 2, '#e9e4d8', '#8a7a66'); ctx.fillStyle = '#94a3b8'; for (let j = 0; j < 3; j++) ctx.fillRect(dx + 5, y + 14 + j * 5, 20 + j * 6, 1.5); ['#fde68a', '#fbcfe8', '#a7f3d0'].forEach((c, j) => { ctx.fillStyle = c; ctx.fillRect(dx + 34 + (j % 2) * 9, y + 13 + j * 8, 8, 7); }); }
@@ -510,7 +498,7 @@
 
         let workstations = [];
         let rooms = {};
-        const hostKeys = Object.keys(staticHostSchema);
+        let hostKeys = Object.keys(hostAppSchema);
 
         function calculateLayout() {
             workstations = [];
@@ -526,7 +514,7 @@
             const maxRowWidth = layoutMaxW || Math.min(1500, window.innerWidth * 1.1);
 
             const roomMeta = hostKeys.map(host => {
-                const apps = staticHostSchema[host];
+                const apps = hostAppSchema[host];
                 const totalApps = apps.length;
                 const effectiveCols = Math.min(totalApps, maxColsPerRoom);
                 const effectiveRows = Math.ceil(totalApps / maxColsPerRoom);
@@ -666,7 +654,7 @@
 
             hostKeys.forEach((host, idx) => {
                 if (!rooms[host]) return;
-                const down = staticHostSchema[host].some(app => !liveServiceState[`${host}:${app}`]);
+                const down = hostAppSchema[host].some(app => !liveServiceState[`${host}:${app}`]);
                 drawRoom(host, idx, down && Math.floor(frame / 20) % 2 === 0);
             });
             workstations.forEach(drawWorker);
@@ -682,15 +670,18 @@
             container.innerHTML = '';
             let totalApps = 0, totalUp = 0;
 
-            Object.keys(staticHostSchema).forEach(host => {
-                staticHostSchema[host].forEach(app => {
+            Object.keys(hostAppSchema).forEach(host => {
+                hostAppSchema[host].forEach(app => {
                     totalApps++;
                     const isUp = liveServiceState[`${host}:${app}`];
                     if (isUp) totalUp++;
 
                     const chip = document.createElement('div');
                     chip.className = `px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 border transition shrink-0 ${isUp ? 'bg-amber-950/40 border-amber-800/40 text-amber-200' : 'bg-rose-950/60 border-rose-800/80 text-rose-300 animate-pulse'}`;
-                    chip.innerHTML = `<span class="w-2 h-2 rounded-full ${isUp ? 'bg-emerald-400 shadow-[0_0_6px_#10b981] animate-pulse' : 'bg-rose-500 shadow-[0_0_6px_#f43f5e]'}"></span> ${app}`;
+                    const dot = document.createElement('span');
+                    dot.className = `w-2 h-2 rounded-full ${isUp ? 'bg-emerald-400 shadow-[0_0_6px_#10b981] animate-pulse' : 'bg-rose-500 shadow-[0_0_6px_#f43f5e]'}`;
+                    chip.appendChild(dot);
+                    chip.appendChild(document.createTextNode(app));
                     container.appendChild(chip);
                 });
             });
@@ -703,16 +694,35 @@
         async function fetchPrometheusMetrics() {
             try {
                 const res = await fetch(`/api/v1/query?query=probe_success`);
+                if (!res.ok) throw new Error(`Prometheus query failed: HTTP ${res.status}`);
                 const json = await res.json();
-                if (json.status === 'success' && json.data.result) {
+                if (json.status === 'success' && Array.isArray(json.data?.result)) {
+                    let schemaChanged = false;
                     json.data.result.forEach(metric => {
-                        const host = metric.metric.host;
-                        const app = metric.metric.app;
-                        const val = parseInt(metric.value[1]);
-                        if (host && app && liveServiceState.hasOwnProperty(`${host}:${app}`)) {
-                            liveServiceState[`${host}:${app}`] = (val === 1);
+                        const host = metric.metric && metric.metric.host;
+                        const app = metric.metric && metric.metric.app;
+                        const rawValue = metric.value && metric.value[1];
+                        const val = Number(rawValue);
+                        if (typeof host !== 'string' || !host.trim() ||
+                            typeof app !== 'string' || !app.trim() ||
+                            !Number.isFinite(val)) return;
+
+                        // Dynamically discover every host/app pair present in Prometheus.
+                        if (!hostAppSchema[host]) {
+                            hostAppSchema[host] = [];
+                            schemaChanged = true;
                         }
+                        if (!hostAppSchema[host].includes(app)) {
+                            hostAppSchema[host].push(app);
+                            schemaChanged = true;
+                        }
+                        liveServiceState[`${host}:${app}`] = (val === 1);
                     });
+
+                    if (schemaChanged) {
+                        hostKeys = Object.keys(hostAppSchema);
+                        resize();
+                    }
                     updateUIRegistry();
                 }
             } catch (e) {
