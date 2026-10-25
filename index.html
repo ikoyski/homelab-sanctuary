@@ -12,6 +12,12 @@
         .ghibli-panel { background: rgba(30, 24, 42, 0.88); backdrop-filter: blur(12px); border: 1px solid rgba(255, 220, 150, 0.2); box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.7); color: #fef3c7; }
         .custom-scroll::-webkit-scrollbar { height: 4px; width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #78350f; border-radius: 4px; }
+        @media (max-width: 520px) {
+            .header-panel { padding: .65rem .75rem !important; gap: .5rem; }
+            .header-brand-copy { display: none !important; }
+            .header-brand-icon { flex: 0 0 2.5rem; }
+            #scene-select { max-width: 42vw; min-width: 0; }
+        }
     </style>
 </head>
 <body class="text-amber-100 select-none overflow-hidden">
@@ -21,12 +27,12 @@
 
     <!-- Stretched Header Overlay -->
     <div class="absolute top-4 left-4 right-4 z-10">
-        <div class="ghibli-panel px-6 py-3 rounded-2xl flex items-center justify-between">
+        <div class="ghibli-panel header-panel px-6 py-3 rounded-2xl flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-amber-600/30 border border-amber-500/50 flex items-center justify-center text-amber-300">
+                <div class="header-brand-icon w-10 h-10 rounded-xl bg-amber-600/30 border border-amber-500/50 flex items-center justify-center text-amber-300">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                 </div>
-                <div>
+                <div class="header-brand-copy">
                     <h1 class="font-bold text-sm tracking-wider uppercase text-amber-200">Ghibli Homelab Sanctuary</h1>
                     <p class="text-xs text-amber-400/80">Cozy Hand-Painted Infrastructure Operations</p>
                 </div>
