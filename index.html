@@ -86,8 +86,8 @@
     <script>
         // Host and app names are discovered from Prometheus labels at runtime.
         // Keep the frontend independent of any particular homelab inventory.
-        const hostAppSchema = {};
-        let liveServiceState = {};
+        const hostAppSchema = Object.create(null);
+        let liveServiceState = Object.create(null);
 
         const canvas = document.createElement('canvas');
         document.getElementById('canvas-container').appendChild(canvas);
@@ -497,12 +497,12 @@
         const lastNames = ["Pendelton", "Belcher", "Oak", "River", "Valley", "Meadow", "Wind", "Breeze", "Fern", "Grove"];
 
         let workstations = [];
-        let rooms = {};
+        let rooms = Object.create(null);
         let hostKeys = Object.keys(hostAppSchema);
 
         function calculateLayout() {
             workstations = [];
-            rooms = {};
+            rooms = Object.create(null);
 
             const maxColsPerRoom = 3;
             const colSpacing = 85;
@@ -703,7 +703,8 @@
                         const app = metric.metric && metric.metric.app;
                         const rawValue = metric.value && metric.value[1];
                         const val = Number(rawValue);
-                        if (typeof host !== 'string' || !host.trim() ||
+                        if (rawValue === undefined || rawValue === null || rawValue === '' ||
+                            typeof host !== 'string' || !host.trim() ||
                             typeof app !== 'string' || !app.trim() ||
                             !Number.isFinite(val)) return;
 
