@@ -197,7 +197,7 @@ Each returned series must contain these labels:
 | `metric.app` | Identifies the service/worker inside that room. |
 | `value[1]` | `"1"` means UP; any other value means DOWN. |
 
-The dashboard only accepts services that are present in `staticHostSchema`.
+The dashboard discovers hosts and apps dynamically from the `host` and `app` labels returned by Prometheus. No host inventory needs to be hard-coded in `index.html`.
 
 ### Example Prometheus result
 
@@ -206,8 +206,8 @@ Conceptually, the application expects data resembling:
 ```json
 {
   "metric": {
-    "host": "util-pve",
-    "app": "grafana"
+    "host": "example-host",
+    "app": "example-service"
   },
   "value": [
     1760000000,
@@ -220,7 +220,7 @@ A failed request does not crash the application. The dashboard keeps the existin
 
 ### Important behavior
 
-A service that has **no matching Prometheus series remains in its current/default state**. Therefore, if a service is added to `staticHostSchema`, make sure the Prometheus configuration produces a matching `host` + `app` series for it.
+Every valid `probe_success` result with non-empty `host` and `app` labels adds that host/app pair to the dashboard automatically. A new host creates a room; a new app creates a worker in that room. If a target has no matching Prometheus series, the dashboard cannot discover it. If a previously discovered series disappears, its last known state remains until the page is reloaded or a matching series returns.
 
 ---
 
@@ -242,13 +242,13 @@ scrape_configs:
     static_configs:
       - targets: ['http://192.0.2.10:18080']
         labels:
-          host: utilities
-          app: grafana
+          host: example-host
+          app: example-service-one
 
       - targets: ['http://192.0.2.11:18081']
         labels:
-          host: development
-          app: jenkins
+          host: another-example-host
+          app: example-service-two
 
     relabel_configs:
       - source_labels: [__address__]
@@ -267,56 +267,17 @@ This means the dashboard can also work with another exporter or monitoring syste
 
 ---
 
-## 🏢 Current infrastructure model
+## 🏢 Dynamic infrastructure model
 
-The dashboard currently models the following rooms and services:
+Hosts and applications are not bundled into the frontend. On each Prometheus poll, the dashboard reads every `probe_success` result carrying non-empty `host` and `app` labels:
 
-| Host / Department | Services |
-|---|---|
-| `media` | `qbittorrent`, `prowlarr`, `sonarr`, `radarr`, `lidarr`, `bazarr`, `jellyfin` |
-| `development` | `openvscode-server`, `jenkins`, `redis`, `postgres` |
-| `utilities` | `pi-hole`, `n8n`, `open-webui`, `ollama`, `homeassistant`, `grafana`, `zipkin`, `pi-hole-dns` |
-| `ncloud` | `nextcloud` |
-| `shared` | `webmin`, `samba` |
-| `others` | `nvr`, `printer` |
+- A previously unseen `host` creates a room/department.
+- A previously unseen `app` for that host creates a worker/character.
+- The service state is updated from the metric value (`1` = UP; otherwise DOWN).
+- Layout is recalculated when new hosts or apps are discovered.
+- Scene visuals are derived from the discovered names, so arbitrary host labels do not require scene-specific edits.
 
-These are not hard-coded into Prometheus. They are the dashboard's visualization schema and can be replaced with your own infrastructure.
-
----
-
-## 🛠️ Customizing hosts and services
-
-The source of truth is `staticHostSchema` near the beginning of `index.html`:
-
-```js
-const staticHostSchema = {
-  "dev-pve": ["jenkins", "redis", "postgres"],
-  "util-pve": ["grafana", "pi-hole"]
-};
-```
-
-The relationship is simple:
-
-```text
-host key       → room / department
-service value  → worker / character
-```
-
-For example:
-
-```js
-"database-pve": ["postgres", "redis"]
-```
-
-creates a database department containing two services.
-
-### Stable generated identities
-
-Characters, names, IDs, positions, and several visual properties are derived from a deterministic hash of the host/service combination.
-
-That means the same service keeps its identity across page reloads instead of receiving a different random character every time.
-
-This is intentional. The code avoids `Math.random()` for layout and appearance.
+To add infrastructure, configure Prometheus to expose `probe_success` series with the expected labels. You do not need to edit `index.html` to register a host or app. The labels are identifiers, so keep them stable across scrapes.
 
 ---
 
@@ -523,7 +484,7 @@ The application is intentionally written as plain browser JavaScript.
 
 The major areas inside `index.html` are:
 
-1. **`staticHostSchema`** — visualization model for hosts and services.
+1. **Dynamic host/app registry** — populated from Prometheus `host` and `app` labels at runtime.
 2. **Art kit** — deterministic hashing, random generation, textures, floors, colors, and reusable drawing helpers.
 3. **Scene system** — textures, scene configurations, active scene, health/weather mapping, and environmental effects.
 4. **Rendering system** — rooms, workers, characters, furniture, windows, and decorations.
@@ -600,8 +561,7 @@ A missing series does not automatically mean DOWN. If you need absence of a prob
 Check these in order:
 
 1. Confirm Prometheus has a `probe_success` series for the service.
-2. Confirm the series contains the exact `host` label expected by `staticHostSchema`.
-3. Confirm it contains the exact `app` label expected by `staticHostSchema`.
+2. Confirm the series contains non-empty `host` and `app` labels. The dashboard discovers these labels dynamically.
 4. Confirm `value[1]` changes from `"1"` to another value when the service is unavailable.
 5. Open the dashboard's `/api/v1/query?query=probe_success` endpoint through the same origin and inspect the returned JSON.
 6. Confirm the dashboard's Nginx container can resolve and reach `prometheus:9090`.
@@ -633,7 +593,7 @@ This usually means one of the following:
 
 - Prometheus is not reachable through `/api/v1/query`.
 - The query returns no matching series.
-- `host` or `app` labels do not match the dashboard schema.
+- The `host` or `app` label is missing or empty, so the dashboard cannot discover the series.
 - Nginx cannot reach the Prometheus container.
 - The page is being served from a different origin without the required CORS configuration.
 
