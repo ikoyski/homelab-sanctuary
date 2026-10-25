@@ -107,7 +107,7 @@ http://prometheus:9090/api/v1/
 
 This avoids requiring CORS configuration in Prometheus and lets the dashboard communicate with Prometheus through a simple same-origin API.
 
-The repository's `nginx.conf` listens on port `80` inside the container. If Docker publishes it as `86:80`, the dashboard is available on port **86** from the LAN.
+The repository's `nginx.conf` listens on port `80` inside the container. If Docker publishes it as `86:80`, the dashboard is available on port **8088** from the LAN.
 
 ---
 
@@ -147,7 +147,7 @@ services:
     container_name: homelab-sanctuary
     restart: unless-stopped
     ports:
-      - "86:80"
+      - "8088:80"
     volumes:
       - ./index.html:/usr/share/nginx/html/index.html:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
@@ -168,13 +168,13 @@ proxy_pass http://prometheus:9090/api/v1/;
 Then open:
 
 ```text
-http://<homelab-host>:86
+http://<homelab-host>:8088
 ```
 
 For example:
 
 ```text
-http://192.168.0.22:86
+http://192.0.2.10:8088
 ```
 
 If Prometheus is not available yet, the application can still render its configured services; the initial state is seeded as healthy and is subsequently updated from Prometheus.
@@ -226,6 +226,8 @@ A service that has **no matching Prometheus series remains in its current/defaul
 
 ## 🔭 Prometheus + Blackbox Exporter
 
+> **Example values only:** `192.0.2.0/24` is reserved for documentation. The target IPs and ports below are placeholders; replace them with your own probe targets and ports before using this scrape configuration.
+
 Homelab Sanctuary works particularly well with Prometheus' [Blackbox Exporter](https://github.com/prometheus/blackbox_exporter), because the dashboard only needs a simple UP/DOWN result.
 
 A typical probe configuration looks like this:
@@ -238,12 +240,12 @@ scrape_configs:
       module: [http_2xx]
 
     static_configs:
-      - targets: ['http://192.168.0.22:3000']
+      - targets: ['http://192.0.2.10:18080']
         labels:
           host: util-pve
           app: grafana
 
-      - targets: ['http://192.168.0.21:8080']
+      - targets: ['http://192.0.2.11:18081']
         labels:
           host: dev-pve
           app: jenkins
