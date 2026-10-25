@@ -242,12 +242,12 @@ scrape_configs:
     static_configs:
       - targets: ['http://192.0.2.10:18080']
         labels:
-          host: util-pve
+          host: utilities
           app: grafana
 
       - targets: ['http://192.0.2.11:18081']
         labels:
-          host: dev-pve
+          host: development
           app: jenkins
 
     relabel_configs:
@@ -273,13 +273,11 @@ The dashboard currently models the following rooms and services:
 
 | Host / Department | Services |
 |---|---|
-| `frontend-spa` | `draftbench`, `ipon`, `kanban` |
-| `backend-services` | `config-server`, `service-registry`, `api-gateway`, `kanban-backend`, `kanban-auth`, `kanban-mcp` |
-| `media-pve` | `qbittorrent`, `prowlarr`, `sonarr`, `radarr`, `lidarr`, `bazarr`, `jellyfin` |
-| `dev-pve` | `openvscode-server`, `jenkins`, `redis`, `postgres` |
-| `util-pve` | `pi-hole`, `n8n`, `open-webui`, `ollama`, `homeassistant`, `grafana`, `zipkin`, `pi-hole-dns` |
-| `ncloud-pve` | `nextcloud` |
-| `shared-pve` | `webmin`, `samba` |
+| `media` | `qbittorrent`, `prowlarr`, `sonarr`, `radarr`, `lidarr`, `bazarr`, `jellyfin` |
+| `development` | `openvscode-server`, `jenkins`, `redis`, `postgres` |
+| `utilities` | `pi-hole`, `n8n`, `open-webui`, `ollama`, `homeassistant`, `grafana`, `zipkin`, `pi-hole-dns` |
+| `ncloud` | `nextcloud` |
+| `shared` | `webmin`, `samba` |
 | `others` | `nvr`, `printer` |
 
 These are not hard-coded into Prometheus. They are the dashboard's visualization schema and can be replaced with your own infrastructure.
