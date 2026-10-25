@@ -444,13 +444,13 @@
         function portrait(w, up) {
             const c = document.createElement('canvas'); c.width = c.height = 96; const x = c.getContext('2d'), g = x.createLinearGradient(0, 0, 0, 96);
             g.addColorStop(0, '#fbbf77'); g.addColorStop(1, '#c2410c'); x.fillStyle = g; x.fillRect(0, 0, 96, 96);
-            if (S.barracks) { x.translate(48, 65); x.scale(1.9, 1.9); drawSoldier.call({ctx:x}, w, up, 0, 0); return c.toDataURL(); }
+            if (S.barracks) { x.translate(48, 65); x.scale(1.9, 1.9); drawSoldier(w, up, 0, 0, x); return c.toDataURL(); }
             if (S.kind) { const sp = (S.kind === 'animal' || S.kind === 'crop') ? spOf(w) : null; if (S.kind == 'cast') { x.translate(48, 70); x.scale(2.3, 2.3); CH[S.chars[w.hs % S.chars.length]](x, { up, blink: false, t: 0, ph: 0 }); } else if (S.kind == 'animal') { x.translate(48, 62); x.scale(2, 2); animal(x, sp, up, 0, 0, false); } else { x.translate(48, 52); x.scale(1.7, 1.7); crop(x, sp, up, 0, 0); } return c.toDataURL(); }
             x.translate(48, 98); x.scale(2.7, 2.7); torso(x, w); x.translate(0, -24); head(x, w, !up, false); return c.toDataURL();
         }
 
-        function drawSoldier(w, up, t, ph) {
-            const c=ctx, step=up?Math.sin(t*.16+ph):0, bob=up?Math.abs(Math.sin(t*.16+ph))*2:0, camo=['#35452d','#596747','#283a27','#7b8658','#465438'];
+        function drawSoldier(w, up, t, ph, targetCtx = ctx) {
+            const c=targetCtx, step=up?Math.sin(t*.16+ph):0, bob=up?Math.abs(Math.sin(t*.16+ph))*2:0, camo=['#35452d','#596747','#283a27','#7b8658','#465438'];
             c.save();
             if (!up) {
                 // DOWN services are shown as fallen soldiers, not sleeping/standing sprites.
