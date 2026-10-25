@@ -50,7 +50,7 @@ liveServiceState["host:app"]
 Worker/creature/plant appearance and room health/weather
 ```
 
-The browser must remain usable if Prometheus is temporarily unreachable. Before the first successful poll, the registry is empty and the header should show a waiting state. After discovery, the canvas should continue rendering from the last known state; a failed poll must not terminate animation or break scene selection.
+The browser must remain usable if Prometheus is temporarily unreachable. Before the first successful poll, the registry is empty and the header should show a waiting state. If a poll request fails, preserve the last known state and keep animation and scene selection working. On a successful query, reset known host/app pairs before applying returned series so a series that disappears cannot remain falsely green; newly discovered pairs must be assigned from the returned numeric value.
 
 ### Prometheus data contract — preserve this
 
@@ -122,7 +122,7 @@ Common scene configuration fields include:
 | `desk` | Desk top light/dark, front/legs, and edge highlight |
 | `chair`, `mon` | Chair and monitor casing colors |
 | `suit` | Optional array of five outfit colors |
-| `fx` | Scene particles such as `rain`, `stars`, `bub`, `fire`, or `fly` |
+| `fx` | Scene particles such as `rain`, `stars`, `bub`, `fire`, `fly`, or `sparks` |
 | `city`, `planet`, `fish`, `nc` | Window details; `nc` disables clouds |
 | `nf` | Set to `1` to hide office floor furniture |
 | `dec(ctx, x, y, t, i)` | Optional wall decoration |
@@ -144,7 +144,7 @@ The `hostAppSchema` registry is populated at runtime from Prometheus; this table
 2. Add a uniquely named configuration to `SC`, including the required palette fields.
 3. Add a `TX` floor texture only if the scene needs one. Texture entries follow the existing `[width, height, (ctx, rng) => {...}]` convention.
 4. Reuse existing weather, window, character, and layout helpers where possible.
-5. Confirm scene selection, animation, hover details, responsive fitting, and health effects still work.
+5. Confirm scene selection, animation, hover details, responsive fitting, and health effects still work. For the factory scene, verify conveyor and machine warnings follow `roomLvl(host)`.
 6. Run the smoke test and visually inspect the new scene in a browser.
 
 ### Scene-specific systems
