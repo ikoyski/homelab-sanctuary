@@ -122,7 +122,3 @@ Weather level is computed from the share of down services: 0 down is level 0 (cl
 <img width="1231" height="1264" alt="image" src="https://github.com/user-attachments/assets/7ed29b90-295f-4a1c-a81b-1798cb3d982f" />
 <img width="1235" height="1263" alt="image" src="https://github.com/user-attachments/assets/43acc480-fb2d-4012-a19a-e8ca94bbf380" />
 <img width="1234" height="1262" alt="image" src="https://github.com/user-attachments/assets/fd4bf56b-d5af-4d96-b902-e37945d97ee3" />
-
-
-
-Add your license of choice here (MIT is comm
