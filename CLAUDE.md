@@ -50,7 +50,7 @@ liveServiceState["host:app"]
 Worker/creature/plant appearance and room health/weather
 ```
 
-The browser must remain usable if Prometheus is temporarily unreachable. The canvas should continue rendering from its current or seeded state; a failed poll must not terminate animation or break scene selection.
+The browser must remain usable if Prometheus is temporarily unreachable. Before the first successful poll, the registry is empty and the header should show a waiting state. After discovery, the canvas should continue rendering from the last known state; a failed poll must not terminate animation or break scene selection.
 
 ### Prometheus data contract — preserve this
 
@@ -58,7 +58,7 @@ The browser must remain usable if Prometheus is temporarily unreachable. The can
 - Each relevant result is expected to have `metric.host` and `metric.app` labels.
 - The sample value is a string in `value[1]`; `"1"` means UP and a non-`"1"` value means DOWN.
 - Runtime state is stored under `liveServiceState["host:app"]` as a boolean.
-- `staticHostSchema` seeds the known hosts and services and determines which rooms/workers exist.
+- `hostAppSchema` starts empty and is populated dynamically from valid Prometheus results. Each distinct `host` creates a room; each distinct `app` under that host creates a worker.
 - The data parser must handle missing, malformed, or unexpected results defensively. Do not let a failed request or malformed response throw out of the polling loop.
 - Keep the UI's fallback behavior intact when a request fails. Do not mark every service down merely because Prometheus is temporarily unavailable unless the product behavior is deliberately redesigned.
 - Do not assume that a service being down will automatically create a time series. Check Prometheus targets, scrape configuration, labels, query results, and proxy routing before changing drawing code.
@@ -78,9 +78,9 @@ Do not fix a stale-green display by arbitrarily changing colors or hard-coding a
 
 The core implementation lives in the main `<script>` in `index.html`. Use the current file to verify exact definitions and ordering.
 
-- **`staticHostSchema`** — source of truth for host rooms and monitored apps.
+- **`hostAppSchema`** — runtime registry of hosts and apps discovered from Prometheus.
 - **Art and deterministic helpers** — `hash`, `rng`, `rr` (rounded rectangles), `mk` (repeating textures), and related drawing utilities.
-- **Base art and host themes** — `T`, `THEME`, `JP` and per-host visual choices.
+- **Base art and host themes** — `T`, deterministic host-floor selection, and scene-level visual choices.
 - **Scene textures/configuration** — `TX` contains extra floor textures; `SC` contains scene configuration; `S` is the active scene.
 - **Health and atmosphere** — `roomLvl`, `wl`, `skyFx`, and `fx` connect room health to weather and scene effects.
 - **Scene selection** — `setScene` changes the active visual configuration.
@@ -136,7 +136,7 @@ Common scene configuration fields include:
 | `jp` | Optional per-host nameplate subtitle overrides, used for class names in the High School scene |
 | `px` | Set to `1` for half-resolution pixel-art rendering |
 
-This table documents the current convention, not a substitute for checking how each field is consumed in code. When adding a field, wire it through the renderer and provide a sensible default for scenes that omit it.
+The `hostAppSchema` registry is populated at runtime from Prometheus; this table documents scene options, not a static inventory. Check how each field is consumed in code before modifying it. When adding a field, wire it through the renderer and provide a sensible default for scenes that omit it.
 
 ### Add a scene
 
@@ -159,13 +159,13 @@ This table documents the current convention, not a substitute for checking how e
 
 When adding or renaming a host or app:
 
-1. Update `staticHostSchema` using the existing schema shape.
-2. Confirm the Prometheus series uses matching `host` and `app` labels. Labels are exact strings; capitalization and punctuation matter.
-3. Check that the app appears in every scene that derives workers from the shared schema, without duplicating services in scene configuration unless the code explicitly requires it.
-4. Keep deterministic identity based on the host/app pair.
-5. Verify UP and DOWN appearances and the hover details.
+1. Configure Prometheus to emit `probe_success` with non-empty `host` and `app` labels for the target.
+2. Keep each label stable and unique enough to identify the intended room and worker; capitalization and punctuation are significant.
+3. Do not add the host or app to a hard-coded frontend list. Runtime discovery should register it automatically.
+4. Confirm the new room/worker appears after a successful poll and layout recalculation.
+5. Verify UP and DOWN states and the hover details.
 
-Do not put credentials, API tokens, private endpoints, or other secrets in `index.html`, `staticHostSchema`, README screenshots, or committed configuration. Monitoring labels should be descriptive, not secret.
+Do not put credentials, API tokens, private endpoints, or secrets in `index.html`, README screenshots, or committed configuration. Monitoring labels should be descriptive, not secret.
 
 ## Interaction, accessibility, and modal behavior
 
