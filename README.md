@@ -44,7 +44,7 @@ The dashboard contains multiple visual worlds that all use the same underlying i
 | 🌱 **Farm** | Departments become plots and services become crops. |
 | 🧙 **Fantasy Guild** | Services become wizards, knights, elves, dwarves, and alchemists. |
 | 🌊 **Underwater Lab** | Services become underwater researchers and creatures. |
-| 🏭 **Automated Factory** | Hosts become production floors with conveyors, machine cells, robot workers, and health-reactive warning lights. |
+| 🏭 **Automated Factory** | Hosts become production floors with conveyors, machine cells, a desk/worker for every discovered app, and health-reactive warning lights. |
 | 🏫 **High School** | Services become students while a teacher reacts to the health of the class. |
 
 Scenes are configuration-driven. The monitoring model does not change when the visual theme changes.
@@ -309,7 +309,7 @@ Two scenes replace the traditional office workers with living things.
 
 ### Barnhouse
 
-Departments become animal stalls and services become animals.
+Each host becomes an animal stable with a consistent animal type selected for that host. Every app in the host is represented by its own animal worker. Different hosts are distributed across the available animal types before the list repeats.
 
 Healthy animals can animate normally, while a failed service is represented by a visibly unhealthy animal, including effects such as an ice pack or thermometer.
 
@@ -321,7 +321,7 @@ horse · cow · sheep · pig · duck · chicken · goat · rabbit
 
 ### Farm
 
-Departments become agricultural plots and services become crops.
+Each host becomes an agricultural plot with a consistent crop type selected for that host. Every app in the host is represented by its own crop worker. Different hosts are distributed across the available crop types before the list repeats.
 
 Healthy crops sway gently. Failed services wilt.
 
@@ -332,7 +332,7 @@ tomato · watermelon · pumpkin · corn
 rice · wheat · carrot · sunflower
 ```
 
-Assignments can be explicitly mapped per host, with deterministic name-based fallbacks for services that are not explicitly assigned.
+Hosts can be explicitly mapped to a type through the scene configuration. Otherwise, the sorted host list is distributed across the available types, so different departments use different animals or crops until the list cycles.
 
 ---
 
