@@ -46,6 +46,7 @@ The dashboard contains multiple visual worlds that all use the same underlying i
 | 🌊 **Underwater Lab** | Services become underwater researchers and creatures. |
 | 🏭 **Automated Factory** | Hosts become production floors with conveyors, machine cells, a desk/worker for every discovered app, and health-reactive warning lights. |
 | 🏫 **High School** | Services become students while a teacher reacts to the health of the class. |
+| 🪖 **Army Barracks** | Services become marching soldiers in camouflage; a drill sergeant reacts when a service goes down. |
 
 Scenes are configuration-driven. The monitoring model does not change when the visual theme changes.
 
@@ -484,9 +485,9 @@ A scene can define:
 - Decorations
 - Open-sky layouts
 - Pixel-art rendering
-- Specialized layouts such as the classroom
+- Specialized layouts such as the classroom and army barracks
 
-The complete scene field reference is maintained in [`CLAUDE.md`](CLAUDE.md).
+The complete scene field reference is maintained in [`CLAUDE.md`](CLAUDE.md). Specialized scenes such as High School and Army Barracks can provide their own character rendering and room decorations while using the same dynamically discovered host/app data.
 
 The renderer is designed so that scene-specific colors and behavior come from the active scene configuration instead of being scattered through the drawing functions.
 
