@@ -177,7 +177,7 @@ For example:
 http://192.0.2.10:8088
 ```
 
-If Prometheus is not available yet, the application can still render its configured services; the initial state is seeded as healthy and is subsequently updated from Prometheus.
+Until the first successful Prometheus query returns labeled series, the dashboard shows a waiting state rather than inventing hosts or apps. Once metrics arrive, rooms and workers are created automatically.
 
 ---
 
@@ -548,9 +548,9 @@ Put appropriate network controls, authentication, VPN access, or a protected rev
 
 ### Initial service state
 
-Services are initially seeded as healthy so the visualization can render immediately. They become authoritative only after Prometheus data is received.
+The host/app registry starts empty. Rooms and workers appear only after a successful Prometheus query returns `probe_success` series with non-empty `host` and `app` labels. The displayed UP/DOWN state is taken from each returned sample.
 
-A missing series does not automatically mean DOWN. If you need absence of a probe to mean failure, that behavior should be implemented in the monitoring/query layer rather than assumed by the visualization.
+A missing series does not automatically mean DOWN. If a previously discovered series disappears, the dashboard keeps its last known state for the current page session. If you need absence of a probe to mean failure, implement that behavior in the monitoring/query layer rather than assuming the visualization can infer it.
 
 ---
 
